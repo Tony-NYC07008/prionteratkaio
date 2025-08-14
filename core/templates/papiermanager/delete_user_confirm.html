@@ -1,0 +1,26 @@
+{% extends 'papiermanager/base.html' %}
+{% block title %}Löschen bestätigen{% endblock %}
+
+{% block content %}
+  <h1>Löschen bestätigen</h1>
+
+  <div class="card" style="max-width:520px;">
+    <p>Sie haben folgenden Benutzer gefunden:</p>
+    <ul>
+      <li><strong>Benutzername:</strong> {{ username }}</li>
+      <li><strong>Email:</strong> {{ email }}</li>
+    </ul>
+
+    <p style="color:#b91c1c; font-weight:600;">Sind Sie sicher, dass Sie diesen Benutzer löschen möchten?</p>
+
+    <form method="post" style="display:flex; gap:10px;">
+      {% csrf_token %}
+      <!-- Wir übergeben die Daten versteckt mit, damit die Info beim Bestätigen noch da ist -->
+      <input type="hidden" name="username" value="{{ username }}">
+      <input type="hidden" name="email" value="{{ email }}">
+
+      <button type="submit" name="action" value="confirm" class="btn" style="background:#e74c3c;">Ja, löschen</button>
+      <button type="submit" name="action" value="cancel" class="btn btn.secondary">Nein, abbrechen</button>
+    </form>
+  </div>
+{% endblock %}

@@ -1,0 +1,10 @@
+{% extends 'papiermanager/base.html' %}
+{% block title %}Benutzer gelöscht{% endblock %}
+
+{% block content %}
+  <h1>Benutzer gelöscht</h1>
+  <div class="card">
+    <p>Benutzer <strong>{{ username }}</strong> wurde erfolgreich gelöscht.</p>
+    <a class="btn" href="{% url 'user_management' %}">Zurück zum User Management</a>
+  </div>
+{% endblock %}

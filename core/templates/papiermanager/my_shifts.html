@@ -1,0 +1,209 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8" />
+  <title>Meine Schichten</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      margin: 0;
+      height: 100vh;
+      display: flex;
+      background-color: #f0f0f0;
+    }
+
+    .sidebar {
+      width: 220px;
+      background-color: #2c3e50;
+      color: white;
+      display: flex;
+      flex-direction: column;
+      padding: 1rem;
+      height: 100vh;
+      box-sizing: border-box;
+    }
+
+    .sidebar h2 {
+      margin-top: 0;
+      margin-bottom: 1.5rem;
+    }
+
+.menu-links a,
+.menu-links button {
+  color: white;
+  text-decoration: none;
+  padding: 0.75rem 1rem;
+  margin-bottom: 0.5rem;
+  border-radius: 4px;
+  transition: background-color 0.3s;
+  font-weight: 600;
+  display: inline-block; /* statt block */
+  text-align: left;
+  width: 100%; /* wir belassen 100% innerhalb der Sidebar */
+  box-sizing: border-box; /* Padding wird innerhalb der Breite berechnet */
+  border: none;
+  background: none;
+  cursor: pointer;
+}
+
+
+.menu-links a:hover,
+.menu-links button:hover {
+  background-color: #34495e;
+}
+
+    /* Dropdown-Button „Schichten“ größer */
+    .dropdown > button {
+      font-size: 1rem; /* wie andere Hauptlinks */
+      font-weight: 600;
+    }
+
+    /* Dropdown-Optionen etwas kleiner */
+    .dropdown-content a,
+    .dropdown-content button {
+      font-size: 0.9rem; /* kleiner als Hauptlinks */
+      font-weight: 500;
+      padding-left: 1.5rem;
+    }
+
+    .dropdown-content button, .dropdown-content a {
+      padding-left: 1.5rem;
+    }
+
+    .dropdown-content {
+      display: none;
+      flex-direction: column;
+    }
+
+    .dropdown.open .dropdown-content {
+      display: flex;
+    }
+
+    .sidebar-bottom {
+      margin-top: auto;
+    }
+
+    .btn-logout {
+      color: white;
+      background-color: #e74c3c;
+      padding: 0.75rem 1rem;
+      border-radius: 4px;
+      font-weight: 600;
+      text-align: left;
+      display: inline-block;
+      text-decoration: none;
+      transition: background-color 0.3s;
+      width: fit-content;
+      cursor: pointer;
+      border: none;
+    }
+
+    .btn-logout:hover {
+      background-color: #c0392b;
+    }
+
+    .main-content {
+      flex-grow: 1;
+      padding: 2rem;
+      overflow-y: auto;
+    }
+
+    h1 {
+      color: #333;
+    }
+
+    ul {
+      list-style-type: none;
+      padding: 0;
+    }
+
+    li {
+      background: white;
+      margin-bottom: 10px;
+      padding: 1rem;
+      border-radius: 6px;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+    }
+  </style>
+  <script>
+    function confirmLogout() {
+      if (confirm("Wollen Sie sich wirklich abmelden?")) {
+        window.location.href = "{% url 'logout' %}";
+      }
+    }
+
+    function toggleDropdown(dropdownId) {
+      const dropdown = document.getElementById(dropdownId);
+      const isOpen = dropdown.classList.contains("open");
+
+      // Schließe alle Dropdowns
+      document.querySelectorAll('.dropdown').forEach(dd => dd.classList.remove("open"));
+
+      // Öffne nur, wenn es vorher geschlossen war
+      if (!isOpen) {
+        dropdown.classList.add("open");
+      }
+    }
+
+    function confirmPapierNachfuellen(form) {
+      if (confirm("Wollen Sie wirklich das Papier nachfüllen und die Mail verschicken?")) {
+        form.submit();
+      }
+    }
+  </script>
+</head>
+<body>
+  <nav class="sidebar">
+    <h2>Menü</h2>
+    <div class="menu-links">
+      <a href="{% url 'my_shifts' %}">Meine Schichten</a>
+      <a href="{% url 'calendar' %}">Schichtkalender</a>
+      {% if user.is_superuser %}
+        <a href="{% url 'user_management' %}">Benutzer verwalten</a>
+      {% endif %}
+      {% if user.is_authenticated %}
+        <!-- Dropdown für Schichten -->
+        <div class="dropdown" id="shiftsDropdown">
+          <button onclick="toggleDropdown('shiftsDropdown')">Schichten &#9662;</button>
+          <div class="dropdown-content">
+            <a href="{% url 'add_shift' %}">Hinzufügen</a>
+            <a href="{% url 'edit_shift' %}">Bearbeiten</a>
+            <a href="{% url 'delete_shift' %}">Löschen</a>
+            <form action="{% url 'papier_nachfuellen' %}" method="post" style="margin:0;" onsubmit="event.preventDefault(); confirmPapierNachfuellen(this);">
+              {% csrf_token %}
+              <button type="submit">Papier nachfüllen</button>
+            </form>
+          </div>
+        </div>
+      {% endif %}
+    </div>
+
+    <div class="sidebar-bottom">
+      {% if user.is_authenticated %}
+        <button class="btn-logout" onclick="confirmLogout()">Abmelden</button>
+      {% else %}
+        <a href="{% url 'login' %}" class="btn-logout" style="background-color:#007bff;">Anmelden</a>
+      {% endif %}
+    </div>
+  </nav>
+
+  <main class="main-content">
+    <h1>Meine Schichten</h1>
+    <ul>
+      {% for shift in shifts %}
+        <li>
+          <strong>{{ shift.date }}</strong>:
+          {% if shift.start_time and shift.end_time %}
+            {{ shift.start_time }} - {{ shift.end_time }}
+          {% endif %}
+          {% if shift.description %}
+            <br>{{ shift.description }}
+          {% endif %}
+        </li>
+      {% empty %}
+        <li>Keine Schichten gefunden.</li>
+      {% endfor %}
+    </ul>
+  </main>
+</body>
+</html>

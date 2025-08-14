@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8" />
+  <title>Schicht bearbeiten</title>
+  <!-- Füge hier dein CSS und JS ein -->
+</head>
+<body>
+  <!-- Hier dein Sidebar und Hauptinhalt -->
+  <h1>Schicht bearbeiten</h1>
+  <form method="post">
+    {% csrf_token %}
+    <label>Beschreibung:
+      <input type="text" name="description" value="{{ shift.description }}" required />
+    </label>
+    <br />
+    <label>Startzeit:
+      <input type="datetime-local" name="start_time" value="{{ shift.start_time|date:'Y-m-d\\TH:i' }}" required />
+    </label>
+    <br />
+    <label>Endzeit:
+      <input type="datetime-local" name="end_time" value="{{ shift.end_time|date:'Y-m-d\\TH:i' }}" required />
+    </label>
+    <br />
+    <button type="submit">Speichern</button>
+    <a href="{% url 'manage_shifts' %}">Abbrechen</a>
+  </form>
+</body>
+</html>
