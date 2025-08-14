@@ -28,7 +28,7 @@ SECRET_KEY = 'django-insecure-)hka@tw-_hmt4-q#nch_!1wm#c29-wly1cqc5a9%k!9jibm4h^
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = False
 
-ALLOWED_HOSTS = ['https://prionteratkaio.onrender.com', '127.0.0.1', 'localhost']
+ALLOWED_HOSTS = ['prionteratkaio.onrender.com', '127.0.0.1', 'localhost']
 
 
 STATIC_URL = '/static/'
