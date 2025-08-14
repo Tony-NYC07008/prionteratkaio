@@ -1,11 +1,6 @@
-# Python
+venv/
+db.sqlite3
+core/
+papiermanager/settings.py
 *.pyc
 __pycache__/
-
-# Django
-db.sqlite3
-*.env
-settings.py
-
-# VS Code
-.vscode/
