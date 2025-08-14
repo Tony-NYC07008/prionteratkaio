@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8" />
+  <title>Schichten verwalten</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      margin: 0;
+      height: 100vh;
+      display: flex;
+      background-color: #f0f0f0;
+    }
+    .sidebar {
+      width: 220px;
+      background-color: #2c3e50;
+      color: white;
+      display: flex;
+      flex-direction: column;
+      padding: 1rem;
+      height: 100vh;
+      box-sizing: border-box;
+    }
+    .sidebar h2 {
+      margin-top: 0;
+      margin-bottom: 1.5rem;
+    }
+    .menu-links a {
+      color: white;
+      text-decoration: none;
+      padding: 0.75rem 1rem;
+      margin-bottom: 0.5rem;
+      border-radius: 4px;
+      transition: background-color 0.3s;
+      font-weight: 600;
+      display: block;
+    }
+    .menu-links a:hover {
+      background-color: #34495e;
+    }
+    .sidebar-bottom {
+      margin-top: auto;
+    }
+    .btn-logout {
+      color: white;
+      background-color: #e74c3c;
+      padding: 0.75rem 1rem;
+      border-radius: 4px;
+      font-weight: 600;
+      text-align: left;
+      display: inline-block;
+      text-decoration: none;
+      transition: background-color 0.3s;
+      width: fit-content;
+      cursor: pointer;
+      border: none;
+    }
+    .btn-logout:hover {
+      background-color: #c0392b;
+    }
+    main.main-content {
+      flex-grow: 1;
+      padding: 2rem;
+      overflow-y: auto;
+    }
+
+    h1 {
+      color: #222; /* neutral, nicht blau */
+    }
+
+    .action-buttons {
+      margin-bottom: 1.5rem;
+    }
+
+    .action-buttons a {
+      background-color: #3498db;
+      color: white;
+      padding: 8px 14px;
+      border-radius: 4px;
+      text-decoration: none;
+      font-weight: 600;
+      margin-right: 10px;
+      display: inline-block;
+      transition: background-color 0.3s;
+    }
+    .action-buttons a:hover {
+      background-color: #2980b9;
+    }
+  </style>
+  <script>
+    function confirmLogout() {
+      if(confirm('Möchten Sie sich wirklich abmelden?')) {
+        window.location.href = "{% url 'logout' %}";
+      }
+    }
+  </script>
+</head>
+<body>
+  <nav class="sidebar">
+    <h2>Menü</h2>
+    <div class="menu-links">
+      <a href="{% url 'my_shifts' %}">Meine Schichten</a>
+      <a href="{% url 'calendar' %}">Schichtkalender</a>
+      {% if user.is_superuser %}
+        <a href="{% url 'user_management' %}">Benutzer verwalten</a>
+      {% endif %}
+      {% if user.is_authenticated %}
+        <a href="{% url 'manage_shifts' %}" class="button">Schichten verwalten</a>
+      {% endif %}
+    </div>
+    <div class="sidebar-bottom">
+      {% if user.is_authenticated %}
+        <button class="btn-logout" onclick="confirmLogout()">Abmelden</button>
+      {% else %}
+        <a href="{% url 'login' %}" class="btn-logout" style="background-color:#007bff; display:inline-block;">Anmelden</a>
+      {% endif %}
+    </div>
+  </nav>
+
+  <main class="main-content">
+    <h1>Schichten verwalten</h1>
+
+    <div class="action-buttons">
+      <a href="{% url 'add_shift' %}">Schicht hinzufügen</a>
+      <a href="{% url 'edit_shift' %}">Schichten bearbeiten</a>
+      <a href="{% url 'delete_shift' %}">Schichten löschen</a>
+    </div>
+
+    <!-- Optional: Hier kannst du weitere Inhalte einfügen, z.B. eine Liste von Schichten, falls gewünscht -->
+  </main>
+</body>
+</html>

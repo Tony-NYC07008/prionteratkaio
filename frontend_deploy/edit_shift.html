@@ -1,0 +1,235 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8" />
+  <title>Schichten bearbeiten</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      margin: 0;
+      height: 100vh;
+      display: flex;
+      background-color: #f0f0f0;
+    }
+    /* Sidebar Styling */
+    .sidebar {
+      width: 220px;
+      background-color: #2c3e50;
+      color: white;
+      display: flex;
+      flex-direction: column;
+      padding: 1rem;
+      height: 100vh;
+      box-sizing: border-box;
+    }
+    .sidebar h2 {
+      margin-top: 0;
+      margin-bottom: 1.5rem;
+    }
+    .menu-links a,
+    .menu-links button {
+      color: white;
+      text-decoration: none;
+      padding: 0.75rem 1rem;
+      margin-bottom: 0.5rem;
+      border-radius: 4px;
+      transition: background-color 0.3s;
+      font-weight: 600;
+      display: inline-block;
+      text-align: left;
+      width: 100%;
+      box-sizing: border-box;
+      border: none;
+      background: none;
+      cursor: pointer;
+    }
+    .menu-links a:hover,
+    .menu-links button:hover {
+      background-color: #34495e;
+    }
+
+    /* Dropdown nur für Schichten */
+        .dropdown > button { font-size: 1rem; font-weight: 600; }
+    .dropdown-content {
+      display: none;
+      flex-direction: column;
+    }
+    .dropdown.open .dropdown-content {
+      display: flex;
+    }
+    .dropdown-content a,
+    .dropdown-content button {
+      font-size: 0.9rem;
+      font-weight: 500;
+      padding-left: 1.5rem;
+    }
+
+    .sidebar-bottom {
+      margin-top: auto;
+    }
+    .btn-logout {
+      color: white;
+      background-color: #e74c3c;
+      padding: 0.75rem 1rem;
+      border-radius: 4px;
+      font-weight: 600;
+      text-align: left;
+      display: inline-block;
+      text-decoration: none;
+      transition: background-color 0.3s;
+      width: fit-content;
+      cursor: pointer;
+      border: none;
+    }
+    .btn-logout:hover {
+      background-color: #c0392b;
+    }
+
+    /* Main Content (unverändert) */
+    main.main-content {
+      flex-grow: 1;
+      padding: 2rem;
+      overflow-y: auto;
+      background: white;
+    }
+    h1 {
+      color: #222;
+      margin-bottom: 1.5rem;
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+    }
+    th, td {
+      padding: 12px 15px;
+      border-bottom: 1px solid #ddd;
+      text-align: left;
+    }
+    tr:hover {
+      background-color: #f9f9f9;
+    }
+    /* Buttons */
+    .btn-edit {
+      background-color: #3498db;
+      color: white;
+      padding: 6px 12px;
+      border: none;
+      border-radius: 4px;
+      font-weight: 600;
+      cursor: pointer;
+      text-decoration: none;
+      display: inline-block;
+      transition: background-color 0.3s;
+    }
+    .btn-edit:hover {
+      background-color: #2980b9;
+    }
+    /* Beschreibung-Link */
+    .description-link {
+      color: #3498db;
+      cursor: pointer;
+      text-decoration: underline;
+      background: none;
+      border: none;
+      font-weight: 600;
+      padding: 0;
+      font-size: 1rem;
+    }
+    .description-link:hover {
+      color: #2980b9;
+    }
+  </style>
+  <script>
+    function confirmLogout() {
+      if(confirm('Möchten Sie sich wirklich abmelden?')) {
+        window.location.href = "{% url 'logout' %}";
+      }
+    }
+    function toggleDropdown(dropdownId) {
+      const dropdown = document.getElementById(dropdownId);
+      const isOpen = dropdown.classList.contains("open");
+      // Alle Dropdowns schließen (falls später mehr hinzukommen)
+      document.querySelectorAll('.dropdown').forEach(dd => dd.classList.remove("open"));
+      if (!isOpen) dropdown.classList.add("open");
+    }
+  </script>
+</head>
+<body>
+  <nav class="sidebar">
+    <h2>Menü</h2>
+    <div class="menu-links">
+      <a href="{% url 'my_shifts' %}">Meine Schichten</a>
+      <a href="{% url 'calendar' %}">Schichtkalender</a>
+      {% if user.is_superuser %}
+        <a href="{% url 'user_management' %}">Benutzer verwalten</a>
+      {% endif %}
+
+      {% if user.is_authenticated %}
+        <!-- Dropdown NUR für „Schichten“ -->
+        <div class="dropdown" id="shiftsDropdown">
+          <button onclick="toggleDropdown('shiftsDropdown')">Schichten &#9662;</button>
+          <div class="dropdown-content">
+            <a href="{% url 'add_shift' %}">Hinzufügen</a>
+            <a href="{% url 'edit_shift' %}">Bearbeiten</a>
+            <a href="{% url 'delete_shift' %}">Löschen</a>
+            <a href="#"
+               onclick="event.preventDefault(); if(confirm('Wollen Sie wirklich das Papier nachfüllen und die Mail verschicken?')) { document.getElementById('papierForm').submit(); }">
+              Papier nachfüllen
+            </a>
+            <form id="papierForm" action="{% url 'papier_nachfuellen' %}" method="post" style="display:none;">
+              {% csrf_token %}
+            </form>
+          </div>
+        </div>
+      {% endif %}
+    </div>
+
+    <div class="sidebar-bottom">
+      {% if user.is_authenticated %}
+        <button class="btn-logout" onclick="confirmLogout()">Abmelden</button>
+      {% else %}
+        <a href="{% url 'login' %}" class="btn-logout" style="background-color:#007bff; display:inline-block;">Anmelden</a>
+      {% endif %}
+    </div>
+  </nav>
+
+  <!-- MAIN – unverändert -->
+  <main class="main-content">
+    <h1>Schichten bearbeiten</h1>
+    <table>
+      <thead>
+        <tr>
+          <th>Datum</th>
+          {% if user.is_superuser %}
+            <th>Benutzer</th>
+          {% endif %}
+          <th>Beschreibung</th>
+          <th>Aktionen</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for shift in shifts %}
+          <tr>
+            <td>{{ shift.date|date:"d.m.Y" }}</td>
+            {% if user.is_superuser %}
+              <td>{{ shift.user.username }}</td>
+            {% endif %}
+            <td>{{ shift.description }}</td>
+            <td>
+              <form method="post" action="{% url 'edit_shift_form' %}" style="display:inline;">
+                {% csrf_token %}
+                <input type="hidden" name="shift_pk" value="{{ shift.pk }}">
+                <button type="submit" class="btn-edit">Bearbeiten</button>
+              </form>
+            </td>
+          </tr>
+        {% empty %}
+          <tr>
+            <td colspan="{% if user.is_superuser %}4{% else %}3{% endif %}">Keine Schichten vorhanden.</td>
+          </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </main>
+</body>
+</html>

@@ -1,0 +1,244 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8" />
+  <title>Benutzer erstellen</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      margin: 0;
+      height: 100vh;
+      display: flex;
+      background-color: #f0f0f0;
+    }
+
+    /* Sidebar */
+    .sidebar {
+      width: 220px;
+      background-color: #2c3e50;
+      color: white;
+      display: flex;
+      flex-direction: column;
+      padding: 1rem;
+      height: 100vh;
+      box-sizing: border-box;
+    }
+
+    .sidebar h2 { margin-top: 0; margin-bottom: 1.5rem; }
+
+    .menu-links a,
+    .menu-links button {
+      color: white;
+      text-decoration: none;
+      padding: 0.75rem 1rem;
+      margin-bottom: 0.5rem;
+      border-radius: 4px;
+      transition: background-color 0.3s;
+      font-weight: 600;
+      display: inline-block;
+      text-align: left;
+      width: 100%;
+      box-sizing: border-box;
+      border: none;
+      background: none;
+      cursor: pointer;
+    }
+
+    .menu-links a:hover,
+    .menu-links button:hover { background-color: #34495e; }
+
+    .dropdown > button { font-size: 1rem; font-weight: 600; }
+    .dropdown-content a, .dropdown-content button { font-size: 0.9rem; font-weight: 500; padding-left: 1.5rem; }
+    .dropdown-content { display: none; flex-direction: column; }
+    .dropdown.open .dropdown-content { display: flex; }
+
+    .sidebar-bottom { margin-top: auto; }
+    .btn-logout {
+      color: white;
+      background-color: #e74c3c;
+      padding: 0.75rem 1rem;
+      border-radius: 4px;
+      font-weight: 600;
+      text-align: left;
+      display: inline-block;
+      text-decoration: none;
+      transition: background-color 0.3s;
+      width: fit-content;
+      cursor: pointer;
+      border: none;
+    }
+    .btn-logout:hover { background-color: #c0392b; }
+
+    /* Hauptbereich */
+    .main-content {
+      flex-grow: 1;
+      padding: 2rem;
+      overflow-y: auto;
+      display: flex;
+      justify-content: center;
+      align-items: flex-start;
+    }
+
+    .container {
+      background: white;
+      padding: 2rem 3rem;
+      border-radius: 10px;
+      box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+      width: 400px;
+    }
+
+    .container h1 {
+      text-align: center;
+      margin-bottom: 1.5rem;
+      color: #2c3e50;
+    }
+
+    form {
+      display: flex;
+      flex-direction: column;
+    }
+
+    label {
+      margin-bottom: 0.3rem;
+      font-weight: 600;
+      color: #555;
+    }
+
+    input, select {
+      padding: 0.6rem;
+      margin-bottom: 1rem;
+      border: 1px solid #ccc;
+      border-radius: 6px;
+      font-size: 1rem;
+      transition: border-color 0.3s;
+    }
+
+    input:focus, select:focus { border-color: #007bff; outline: none; }
+
+    button.submit-btn {
+      background-color: #2c3e50;
+      color: white;
+      padding: 0.75rem;
+      font-weight: 600;
+      border: none;
+      border-radius: 6px;
+      cursor: pointer;
+      transition: background-color 0.3s;
+    }
+
+    button.submit-btn:hover { background-color: #34495e; }
+
+    /* Flash-Messages */
+    .flash-message {
+      padding: 0.75rem 1rem;
+      border-radius: 6px;
+      margin-bottom: 0.5rem;
+      color: white;
+      font-weight: 600;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.15);
+    }
+    .flash-message.success { background-color: #27ae60; }
+    .flash-message.error { background-color: #e74c3c; }
+  </style>
+
+  <script>
+    function confirmLogout() {
+      if (confirm("Wollen Sie sich wirklich abmelden?")) {
+        window.location.href = "{% url 'logout' %}";
+      }
+    }
+
+    function toggleDropdown(dropdownId) {
+      const dropdown = document.getElementById(dropdownId);
+      const isOpen = dropdown.classList.contains("open");
+      document.querySelectorAll('.dropdown').forEach(dd => dd.classList.remove("open"));
+      if (!isOpen) dropdown.classList.add("open");
+    }
+
+    function hideMessages() {
+      setTimeout(() => {
+        document.querySelectorAll('.flash-message').forEach(el => el.remove());
+      }, 4000);
+    }
+
+    window.onload = hideMessages;
+  </script>
+</head>
+
+<body>
+  <!-- Sidebar -->
+  <nav class="sidebar">
+    <h2>Menü</h2>
+    <div class="menu-links">
+      <a href="{% url 'my_shifts' %}">Meine Schichten</a>
+      <a href="{% url 'calendar' %}">Schichtkalender</a>
+      {% if user.is_superuser %}
+        <a href="{% url 'user_management' %}">Benutzer verwalten</a>
+      {% endif %}
+      {% if user.is_authenticated %}
+        <div class="dropdown" id="shiftsDropdown">
+          <button onclick="toggleDropdown('shiftsDropdown')">Schichten &#9662;</button>
+          <div class="dropdown-content">
+            <a href="{% url 'add_shift' %}">Hinzufügen</a>
+            <a href="{% url 'edit_shift' %}">Bearbeiten</a>
+            <a href="{% url 'delete_shift' %}">Löschen</a>
+            <form action="{% url 'papier_nachfuellen' %}" method="post" style="margin:0;" onsubmit="event.preventDefault(); if(confirm('Wollen Sie wirklich das Papier nachfüllen und die Mail verschicken?')) this.submit();">
+              {% csrf_token %}
+              <button type="submit">Papier nachfüllen</button>
+            </form>
+          </div>
+        </div>
+      {% endif %}
+    </div>
+    <div class="sidebar-bottom">
+      {% if user.is_authenticated %}
+        <button class="btn-logout" onclick="confirmLogout()">Abmelden</button>
+      {% else %}
+        <a href="{% url 'login' %}" class="btn-logout" style="background-color:#007bff;">Anmelden</a>
+      {% endif %}
+    </div>
+  </nav>
+
+  <!-- Hauptbereich -->
+  <main class="main-content">
+    <div class="container">
+      <h1>Benutzer erstellen</h1>
+<form method="post" action="{% url 'register' %}">
+    {% csrf_token %}
+    
+    <label for="username">Benutzername</label>
+    <input type="text" name="username" id="username" required>
+
+    <label for="email">E-Mail</label>
+    <input type="email" name="email" id="email">
+
+    <label for="role">Rolle</label>
+    <select name="role" id="role" required>
+        <option value="">-- Bitte auswählen --</option>
+        <option value="user">Benutzer</option>
+        <option value="admin">Admin</option>
+    </select>
+
+    <label for="password1">Passwort</label>
+    <input type="password" name="password1" id="password1" required>
+
+    <label for="password2">Passwort wiederholen</label>
+    <input type="password" name="password2" id="password2" required>
+
+    <button type="submit" class="submit-btn">Benutzer erstellen</button>
+</form>
+    </div>
+  </main>
+
+  <!-- Flash Messages -->
+  {% if messages %}
+    <div style="position: fixed; bottom: 20px; right: 20px; z-index: 1000;">
+      {% for message in messages %}
+        <div class="flash-message {% if message.tags == 'error' %}error{% else %}success{% endif %}">
+          {{ message }}
+        </div>
+      {% endfor %}
+    </div>
+  {% endif %}
+</body>
+</html>
