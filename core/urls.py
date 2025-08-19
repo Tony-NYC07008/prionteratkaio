@@ -11,7 +11,9 @@ urlpatterns = [
     path('add_shift/', views.add_shift, name='add_shift'),
     path('edit_shift/', views.edit_shift, name='edit_shift'),
     path('edit_shift_form/', views.edit_shift_form, name='edit_shift_form'),
-    path('delete_shift/', views.delete_shift, name='delete_shift'),
+    path("delete_shift/", views.delete_shift, name="delete_shift"),
+    path("delete_shift_confirm/<int:pk>/", views.delete_shift_confirm, name="delete_shift_confirm"),
+
 
     path('calendar/', views.calendar_view, name='calendar'),
     path('api/shifts/', views.shifts_json, name='shifts_json'),

@@ -26,7 +26,8 @@
       margin-top: 0;
       margin-bottom: 1.5rem;
     }
-    .menu-links a {
+    .menu-links a,
+    .menu-links button {
       color: white;
       text-decoration: none;
       padding: 0.75rem 1rem;
@@ -34,11 +35,34 @@
       border-radius: 4px;
       transition: background-color 0.3s;
       font-weight: 600;
-      display: block;
+      display: inline-block;
+      text-align: left;
+      width: 100%;
+      box-sizing: border-box;
+      border: none;
+      background: none;
+      cursor: pointer;
     }
-    .menu-links a:hover {
+    .menu-links a:hover,
+    .menu-links button:hover {
       background-color: #34495e;
     }
+
+    .dropdown > button { font-size: 1rem; font-weight: 600; }
+    .dropdown-content {
+      display: none;
+      flex-direction: column;
+    }
+    .dropdown.open .dropdown-content {
+      display: flex;
+    }
+    .dropdown-content a,
+    .dropdown-content button {
+      font-size: 0.9rem;
+      font-weight: 500;
+      padding-left: 1.5rem;
+    }
+
     .sidebar-bottom {
       margin-top: auto;
     }
@@ -59,6 +83,7 @@
     .btn-logout:hover {
       background-color: #c0392b;
     }
+
     /* Main Content */
     main.main-content {
       flex-grow: 1;
@@ -126,27 +151,64 @@
       color: #222;
     }
   </style>
+  <script>
+    function confirmLogout() {
+      if(confirm('Möchten Sie sich wirklich abmelden?')) {
+        window.location.href = "{% url 'logout' %}";
+      }
+    }
+    function toggleDropdown(dropdownId) {
+      const dropdown = document.getElementById(dropdownId);
+      const isOpen = dropdown.classList.contains("open");
+      document.querySelectorAll('.dropdown').forEach(dd => dd.classList.remove("open"));
+      if (!isOpen) dropdown.classList.add("open");
+    }
+  </script>
 </head>
 <body>
+  <!-- Sidebar identisch -->
   <nav class="sidebar">
     <h2>Menü</h2>
     <div class="menu-links">
-      <a href="/my_shifts">Meine Schichten</a>
-      <a href="/calendar">Schichtkalender</a>
-      <!-- Beispiel für Admin-Link -->
-      <a href="/user_management" style="display:none;">Benutzer verwalten</a>
-      <a href="/manage_shifts">Schichten verwalten</a>
+      <a href="{% url 'my_shifts' %}">Meine Schichten</a>
+      <a href="{% url 'calendar' %}">Schichtkalender</a>
+      {% if user.is_superuser %}
+        <a href="{% url 'user_management' %}">Benutzer verwalten</a>
+      {% endif %}
+
+      {% if user.is_authenticated %}
+        <div class="dropdown" id="shiftsDropdown">
+          <button onclick="toggleDropdown('shiftsDropdown')">Schichten &#9662;</button>
+          <div class="dropdown-content">
+            <a href="{% url 'add_shift' %}">Hinzufügen</a>
+            <a href="{% url 'edit_shift' %}">Bearbeiten</a>
+            <a href="{% url 'delete_shift' %}">Löschen</a>
+            <a href="#"
+               onclick="event.preventDefault(); if(confirm('Wollen Sie wirklich das Papier nachfüllen und die Mail verschicken?')) { document.getElementById('papierForm').submit(); }">
+              Papier nachfüllen
+            </a>
+            <form id="papierForm" action="{% url 'papier_nachfuellen' %}" method="post" style="display:none;">
+              {% csrf_token %}
+            </form>
+          </div>
+        </div>
+      {% endif %}
     </div>
+
     <div class="sidebar-bottom">
-      <button class="btn-logout" onclick="if(confirm('Möchten Sie sich wirklich abmelden?')){window.location.href='/logout';}">Abmelden</button>
+      {% if user.is_authenticated %}
+        <button class="btn-logout" onclick="confirmLogout()">Abmelden</button>
+      {% else %}
+        <a href="{% url 'login' %}" class="btn-logout" style="background-color:#007bff;">Anmelden</a>
+      {% endif %}
     </div>
   </nav>
 
+  <!-- Hauptinhalt -->
   <main class="main-content">
     <h1>Schicht bearbeiten</h1>
-    <form method="post" action="/save_shift_edit">
-      <!-- CSRF-Token falls du Django nutzt, hier Platzhalter -->
-      <!-- <input type="hidden" name="csrfmiddlewaretoken" value="{{ csrf_token }}"> -->
+    <form method="post">
+      {% csrf_token %}
       <input type="hidden" name="shift_pk" value="{{ shift.pk }}">
 
       <label for="date">Datum</label>
@@ -155,11 +217,9 @@
       <label for="description">Beschreibung</label>
       <textarea id="description" name="description">{{ shift.description }}</textarea>
 
-      <!-- Optional: mehr Design-Felder hier einfügen -->
-
       <div class="form-buttons">
-        <button type="submit" class="btn-save">Speichern</button>
-        <a href="/manage_shifts" class="btn-cancel">Abbrechen</a>
+        <button type="submit" name="save" class="btn-save">Speichern</button>
+        <a href="{% url 'edit_shift' %}" class="btn-cancel">Abbrechen</a>
       </div>
     </form>
   </main>

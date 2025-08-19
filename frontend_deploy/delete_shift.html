@@ -11,7 +11,7 @@
       display: flex;
       background-color: #f0f0f0;
     }
-    /* Sidebar Styling gleich wie oben */
+    /* Sidebar Styling */
     .sidebar {
       width: 220px;
       background-color: #2c3e50;
@@ -104,7 +104,23 @@
   </style>
 </head>
 <body>
-  {% include "sidebar.html" %}
+  <!-- Sidebar direkt eingebaut (wie bei edit_shift.html) -->
+  <div class="sidebar">
+    <h2>Menü</h2>
+    <div class="menu-links">
+      <a href="{% url 'dashboard' %}">Dashboard</a>
+      <a href="{% url 'add_shift' %}">Schicht hinzufügen</a>
+      <a href="{% url 'edit_shift' %}">Schicht bearbeiten</a>
+      <a href="{% url 'delete_shift' %}">Schicht löschen</a>
+      <a href="{% url 'user_management' %}">Benutzerverwaltung</a>
+    </div>
+    <div class="sidebar-bottom">
+      <form method="post" action="{% url 'logout' %}">
+        {% csrf_token %}
+        <button type="submit" class="btn-logout">Logout</button>
+      </form>
+    </div>
+  </div>
 
   <main class="main-content">
     <h1>Schichten löschen</h1>
@@ -126,7 +142,9 @@
             <td>
               <form method="post" action="{% url 'delete_shift_confirm' shift.id %}" style="display:inline;">
                 {% csrf_token %}
-                <button type="submit" class="btn-delete" onclick="return confirm('Möchten Sie diese Schicht wirklich löschen?');">Löschen</button>
+                <button type="submit" class="btn-delete" onclick="return confirm('Möchten Sie diese Schicht wirklich löschen?');">
+                  Löschen
+                </button>
               </form>
             </td>
           </tr>

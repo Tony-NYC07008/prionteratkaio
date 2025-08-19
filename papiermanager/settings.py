@@ -26,7 +26,7 @@ LOGIN_REDIRECT_URL = '/my_shifts/'  # oder wo du nach Login landen willst
 SECRET_KEY = 'django-insecure-)hka@tw-_hmt4-q#nch_!1wm#c29-wly1cqc5a9%k!9jibm4h^'
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = False
+DEBUG = True
 
 ALLOWED_HOSTS = ['prionteratkaio.onrender.com', '127.0.0.1', 'localhost']
 

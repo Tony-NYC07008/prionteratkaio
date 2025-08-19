@@ -175,6 +175,35 @@
     margin-right: 6px;
     vertical-align: middle;
   }
+
+/* Header-Toolbar richtig zentrieren */
+.fc-header-toolbar {
+  position: relative; /* Basis für absolute Positionierung des Titels */
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.fc-header-toolbar .fc-toolbar-title {
+  position: absolute;
+  left: 50%;
+  transform: translateX(-50%) translateY(-15px); /* nach oben verschieben */
+  white-space: nowrap;
+}
+
+/* Links und rechts Platz lassen, damit sie den Titel nicht verschieben */
+.fc-header-toolbar .fc-toolbar-chunk:first-child,
+.fc-header-toolbar .fc-toolbar-chunk:last-child {
+  flex: 1;
+  display: flex;
+  justify-content: flex-start; /* rechte Seite ggf. auf flex-end setzen, falls Buttons rechts */
+}
+
+/* Optional: rechte Buttons nach rechts schieben */
+.fc-header-toolbar .fc-toolbar-chunk:last-child {
+  justify-content: flex-end;
+}
+
 </style>
 
 </head>
@@ -275,7 +304,7 @@
         headerToolbar: {
           left: 'prev,next today',
           center: 'title',
-          right: 'dayGridMonth,timeGridWeek,timeGridDay'
+          right: ''
         },
         events: '{% url "shifts_json" %}',
         eventDisplay: 'background',  // ganztägig farbiges Feld füllen

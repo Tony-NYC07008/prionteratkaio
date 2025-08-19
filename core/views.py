@@ -128,51 +128,48 @@ def edit_shift(request):
 
 @login_required
 def edit_shift_form(request):
-    if request.method == 'POST':
-        pk = request.POST.get('shift_pk')
-        shift = get_object_or_404(Shift, pk=pk)
+    pk = request.POST.get('shift_pk') or request.GET.get('shift_pk')
+    shift = get_object_or_404(Shift, pk=pk)
 
-        if 'save' in request.POST:
-            form = ShiftForm(request.POST, instance=shift)
-            if form.is_valid():
-                form.save()
-                messages.success(request, "Schicht erfolgreich gespeichert ✅")
-                return redirect('edit_shift')
-        else:
-            form = ShiftForm(instance=shift)
+    if request.method == 'POST' and 'save' in request.POST:
+        shift.date = request.POST.get('date')
+        shift.description = request.POST.get('description')
+        shift.save()
+        messages.success(request, "Schicht erfolgreich gespeichert ✅")
+        return redirect('edit_shift')
 
-        return render(request, 'papiermanager/edit_shift_form.html', {'form': form})
+    return render(request, 'papiermanager/edit_shift_form.html', {
+        'shift': shift,
+    })
 
-    return redirect('edit_shift')
 
 
 @login_required
 def delete_shift(request):
-    shifts = Shift.objects.filter(user=request.user).order_by('date', 'start_time')
-    if request.method == "POST":
-        shift_id = request.POST.get("shift_id")
-        shift = get_object_or_404(Shift, id=shift_id)
-        if shift.user == request.user:
-            shift.delete()
-            messages.success(request, "Schicht gelöscht ✅")
-        return redirect('delete_shift')
+    if request.user.is_superuser:
+        shifts = Shift.objects.all().order_by("date", "start_time")
+    else:
+        shifts = Shift.objects.filter(user=request.user).order_by("date", "start_time")
     return render(request, "papiermanager/delete_shift.html", {"shifts": shifts})
 
 
 @login_required
-def delete_shift_confirm(request):
-    if request.method == 'POST':
-        pk = request.POST.get('shift_pk')
-        shift = get_object_or_404(Shift, pk=pk)
+def delete_shift_confirm(request, pk):
+    shift = get_object_or_404(Shift, pk=pk)
 
-        if 'confirm' in request.POST and shift.user == request.user:
-            shift.delete()
-            messages.success(request, "Schicht gelöscht ✅")
-            return redirect('edit_shift')
+    # nur der Besitzer oder Admin darf löschen
+    if not request.user.is_superuser and shift.user != request.user:
+        messages.error(request, "Keine Berechtigung ❌")
+        return redirect("delete_shift")
 
-        return render(request, 'papiermanager/delete_shift_confirm.html', {'shift': shift})
+    if request.method == "POST":
+        shift.delete()
+        messages.success(request, "Schicht erfolgreich gelöscht ✅")
+        return redirect("delete_shift")
 
-    return redirect('edit_shift')
+    # Falls jemand GET aufruft → direkt zurück
+    return redirect("delete_shift")
+
 
 
 # =========================
