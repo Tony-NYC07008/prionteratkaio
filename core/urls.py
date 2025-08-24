@@ -14,13 +14,14 @@ urlpatterns = [
     path("delete_shift/", views.delete_shift, name="delete_shift"),
     path("delete_shift_confirm/<int:pk>/", views.delete_shift_confirm, name="delete_shift_confirm"),
 
+    path('list_users/', views.list_users_view, name='list_users'),
 
     path('calendar/', views.calendar_view, name='calendar'),
     path('api/shifts/', views.shifts_json, name='shifts_json'),
     path('shifts_json/', views.shifts_json, name='shifts_json'),
 
     # WICHTIG: hier auf die richtigen Views zeigen
-    path('user_management/', views.user_management, name='user_management'),
+
     path('delete_user/', views.delete_user_view, name='delete_user'),
 
     path('papier-nachfuellen/', views.papier_nachfuellen, name='papier_nachfuellen'),

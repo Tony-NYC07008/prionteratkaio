@@ -160,7 +160,7 @@
     function toggleDropdown(dropdownId) {
       const dropdown = document.getElementById(dropdownId);
       const isOpen = dropdown.classList.contains("open");
-      document.querySelectorAll('.dropdown').forEach(dd => dd.classList.remove("open"));
+      dropdown.classList.toggle("open"); //
       if (!isOpen) dropdown.classList.add("open");
     }
   </script>
@@ -172,9 +172,17 @@
     <div class="menu-links">
       <a href="{% url 'my_shifts' %}">Meine Schichten</a>
       <a href="{% url 'calendar' %}">Schichtkalender</a>
-      {% if user.is_superuser %}
-        <a href="{% url 'user_management' %}">Benutzer verwalten</a>
-      {% endif %}
+{% if user.is_superuser %}
+  <!-- Dropdown für Benutzer -->
+  <div class="dropdown" id="usersDropdown">
+    <button onclick="toggleDropdown('usersDropdown')">Benutzer &#9662;</button>
+    <div class="dropdown-content">
+      <a href="{% url 'register' %}">Erstellen</a>
+      <a href="{% url 'delete_user' %}">Löschen</a>
+      <a href="{% url 'list_users' %}">Benutzer</a>
+    </div>
+  </div>
+{% endif %}
 
       {% if user.is_authenticated %}
         <div class="dropdown" id="shiftsDropdown">

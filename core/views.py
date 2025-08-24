@@ -8,7 +8,7 @@ from django.core.mail import EmailMessage
 from django.contrib import messages
 from django.conf import settings
 from datetime import date
-
+from django.contrib.admin.views.decorators import staff_member_required
 from .forms import RegistrationForm, ShiftForm
 from .models import Shift
 
@@ -49,7 +49,6 @@ def logout_view(request):
 # =========================
 # Registrierung
 # =========================
-
 @superuser_required
 def register_view(request):
     if request.method == "POST":
@@ -74,10 +73,8 @@ def register_view(request):
                 user.is_staff = True
                 user.is_superuser = True
             user.save()
-
-            # Einmal-Meldung über Session
-            request.session["show_user_created"] = user.username
-            return redirect("user_management")
+            # Positive Meldung entfernt
+            return redirect("my_shifts")
 
     return render(request, "papiermanager/register.html")
 
@@ -176,57 +173,8 @@ def delete_shift_confirm(request, pk):
 # Benutzerverwaltung
 # =========================
 
-@superuser_required
-def user_management(request):
-    return render(request, 'papiermanager/user_management.html')
 
-@superuser_required
-def user_management(request):
-    created_user = request.session.pop("show_user_created", None)
-    if created_user:
-        messages.success(request, f"Benutzer {created_user} erfolgreich erstellt ✅")
 
-    deleted_user = request.session.pop("show_user_deleted", None)
-    if deleted_user:
-        messages.success(request, f"Benutzer {deleted_user} erfolgreich gelöscht ✅")
-
-    return render(request, "papiermanager/user_management.html")
-
-@superuser_required
-def delete_user(request):
-    message = None
-    if request.method == 'POST':
-        action = request.POST.get('action')
-        username = request.POST.get('username', '').strip()
-        email = request.POST.get('email', '').strip()
-
-        if action == 'cancel':
-            return redirect('user_management')
-
-        if action == 'confirm':
-            try:
-                target = User.objects.get(username=username, email=email)
-                if target == request.user:
-                    message = "Sie können sich nicht selbst löschen."
-                    return render(request, 'papiermanager/delete_user.html', {'message': message})
-                target.delete()
-                messages.success(request, f"Benutzer {username} gelöscht ✅")
-                return redirect('user_management')
-            except User.DoesNotExist:
-                message = "Benutzer nicht gefunden."
-                return render(request, 'papiermanager/delete_user.html', {'message': message})
-
-        if action == 'lookup':
-            try:
-                User.objects.get(username=username, email=email)
-                return render(request, 'papiermanager/delete_user_confirm.html', {
-                    'username': username,
-                    'email': email,
-                })
-            except User.DoesNotExist:
-                message = "Benutzer nicht gefunden."
-
-    return render(request, 'papiermanager/delete_user.html', {'message': message})
 
 @superuser_required
 def delete_user_view(request):
@@ -248,12 +196,21 @@ def delete_user_view(request):
             messages.error(request, "Sie können sich nicht selbst löschen.")
             return render(request, "papiermanager/delete_user.html")
 
-        target.delete()
-        # Einmal-Meldung über Session
-        request.session["show_user_deleted"] = username
-        return redirect("user_management")
+        try:
+            target.delete()
+            # Positive Meldung entfernt
+        except Exception as e:
+            messages.error(request, f"Fehler beim Löschen des Benutzers: {e}")
+
+        return redirect("my_shifts")
 
     return render(request, "papiermanager/delete_user.html")
+
+
+@superuser_required
+def list_users_view(request):
+    users = User.objects.all().order_by('username')  # Alle User alphabetisch
+    return render(request, "papiermanager/list_users.html", {"users": users})
 # =========================
 # Kalender & Shifts API
 # =========================
